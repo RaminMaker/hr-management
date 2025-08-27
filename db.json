@@ -1,0 +1,48 @@
+{
+  "departments": [
+    {
+      "id": 1,
+      "name": "مالی",
+      "status": "active",
+      "creationDate": "2022-01-15T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "فروش",
+      "status": "active",
+      "creationDate": "2021-05-20T12:30:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "IT",
+      "status": "inactive",
+      "creationDate": "2023-02-01T09:00:00.000Z"
+    }
+  ],
+  "employees": [
+    {
+      "id": 101,
+      "name": "سارا محمدی",
+      "departmentId": 1,
+      "gender": "female",
+      "mobile": "09123456789",
+      "education": "master"
+    },
+    {
+      "id": 102,
+      "name": "علی رضایی",
+      "departmentId": 2,
+      "gender": "male",
+      "mobile": "",
+      "education": "bachelor"
+    },
+    {
+      "id": 103,
+      "name": "مریم احمدی",
+      "departmentId": 1,
+      "gender": "female",
+      "mobile": "09121112233",
+      "education": "phd"
+    }
+  ]
+}
