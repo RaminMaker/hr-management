@@ -1,0 +1,52 @@
+<header class="dialog-header">
+  <div class="header-content">
+    <mat-icon >edit</mat-icon>
+    <h2 mat-dialog-title appVazirFont>ویرایش کارمند: {{ employee.name }}</h2>
+  </div>
+  <button mat-icon-button class="close-button" (click)="onCancel()" matTooltip="بستن">
+    <mat-icon >close</mat-icon>
+  </button>
+</header>
+
+<mat-dialog-content>
+  <form [formGroup]="editForm" id="edit-employee-form" (ngSubmit)="onSubmit()" class="employee-form">
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label appVazirFont>نام و نام خانوادگی</mat-label>
+      <input matInput formControlName="name">
+      <mat-error *ngIf="editForm.get('name')?.hasError('required')" appVazirFont>نام الزامی است.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label appVazirFont>شماره موبایل (اختیاری)</mat-label>
+      <input matInput formControlName="mobile" type="tel">
+      <mat-error *ngIf="editForm.get('mobile')?.hasError('pattern')" appVazirFont>فرمت موبایل صحیح نیست.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label appVazirFont>تحصیلات</mat-label>
+      <mat-select formControlName="education" appVazirFont>
+        <mat-option *ngFor="let level of educationLevels" [value]="level.value">
+          {{ level.viewValue }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="editForm.get('education')?.hasError('required')" appVazirFont>تحصیلات الزامی است.</mat-error>
+    </mat-form-field>
+
+    <div class="form-field">
+      <mat-radio-group formControlName="gender" class="gender-radio-group">
+        <label class="radio-label" appVazirFont>جنسیت:</label>
+        <mat-radio-button value="male" appVazirFont>مرد</mat-radio-button>
+        <mat-radio-button value="female" appVazirFont>زن</mat-radio-button>
+      </mat-radio-group>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-stroked-button (click)="onCancel()" appVazirFont>انصراف</button>
+  <button mat-flat-button color="primary" type="submit" form="edit-employee-form" [disabled]="editForm.invalid || !editForm.dirty">
+    <mat-icon >save</mat-icon>
+    <span appVazirFont>ذخیره تغییرات</span>
+  </button>
+</mat-dialog-actions>

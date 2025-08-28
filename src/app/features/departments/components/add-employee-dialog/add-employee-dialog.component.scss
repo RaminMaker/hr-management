@@ -1,0 +1,78 @@
+
+
+:host {
+  display: block;
+}
+
+// هدر دیالوگ
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e0e0e0;
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mat-mdc-dialog-title {
+    margin: 0;
+  }
+}
+
+
+.mat-mdc-dialog-content {
+  padding: 24px;
+}
+
+
+.employee-form {
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 16px; 
+}
+
+.form-field {
+
+  flex: 1 1 200px;
+  min-width: 200px;
+}
+
+
+@media (max-width: 599px) {
+  .form-field {
+    flex-basis: 100%;
+  }
+}
+
+
+.gender-radio-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 56px; 
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.radio-label {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+
+.dialog-actions {
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+
+  button[mat-flat-button] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}

@@ -1,0 +1,71 @@
+<header class="dialog-header">
+  <h2 mat-dialog-title appVazirFont>کارمندان واحد: {{ data.departmentName }}</h2>
+  <button mat-icon-button class="close-button" (click)="onClose()" matTooltip="بستن">
+    <mat-icon >close</mat-icon>
+  </button>
+</header>
+
+<mat-dialog-content class="mat-typography">
+  <div *ngIf="dataSource.data.length > 0; else noEmployees" class="table-container">
+    <div class="table-responsive-wrapper">
+      <table mat-table [dataSource]="dataSource">
+
+   
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef appVazirFont> شناسه </th>
+          <td mat-cell *matCellDef="let emp"> {{emp.id}} </td>
+        </ng-container>
+
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef appVazirFont> نام </th>
+          <td mat-cell *matCellDef="let emp"> {{emp.name}} </td>
+        </ng-container>
+        
+        <ng-container matColumnDef="gender">
+          <th mat-header-cell *matHeaderCellDef appVazirFont> جنسیت </th>
+          <td mat-cell *matCellDef="let emp" appVazirFont> {{emp.gender === 'male' ? 'مرد' : 'زن'}} </td>
+        </ng-container>
+
+
+        <ng-container matColumnDef="education">
+          <th mat-header-cell *matHeaderCellDef appVazirFont> تحصیلات </th>
+          <td mat-cell *matCellDef="let emp"> {{ translateEducation(emp.education) }} </td>
+        </ng-container>
+
+   
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef appVazirFont> عملیات </th>
+          <td mat-cell *matCellDef="let emp" class="actions-cell">
+            <button mat-icon-button color="primary" (click)="onEditEmployee(emp)" matTooltip="ویرایش کارمند">
+              <mat-icon >edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="onDeleteEmployee(emp)" matTooltip="حذف کارمند">
+              <mat-icon >delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+    <mat-paginator [pageSizeOptions]="[5, 10, 15]" 
+                   showFirstLastButtons 
+                   aria-label="انتخاب صفحه" appVazirFont>
+    </mat-paginator>
+  </div>
+  <ng-template #noEmployees>
+    <div class="no-data-container">
+      <mat-icon  class="no-data-icon">group_off</mat-icon>
+      <p class="no-data-message" appVazirFont>هیچ کارمندی برای این واحد ثبت نشده است.</p>
+    </div>
+  </ng-template>
+</mat-dialog-content>
+
+
+
+<!-- <mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onClose()">بستن</button>
+</mat-dialog-actions> -->

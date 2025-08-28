@@ -1,0 +1,35 @@
+<header class="dialog-header">
+  <div class="header-content">
+    <mat-icon >edit</mat-icon>
+    <h2 mat-dialog-title appVazirFont>ویرایش واحد: {{ department.name }}</h2>
+  </div>
+  <button mat-icon-button class="close-button" (click)="onCancel()" matTooltip="بستن">
+    <mat-icon >close</mat-icon>
+  </button>
+</header>
+
+<mat-dialog-content>
+  <form [formGroup]="editForm" id="edit-department-form" (ngSubmit)="onSubmit()" class="department-form">
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label appVazirFont>نام واحد</mat-label>
+      <input matInput formControlName="name">
+      <mat-error *ngIf="editForm.get('name')?.hasError('required')" appVazirFont>نام الزامی است.</mat-error>
+    </mat-form-field>
+
+    <div class="form-field">
+      <mat-radio-group formControlName="status" class="status-radio-group">
+        <label class="radio-label" appVazirFont>وضعیت:</label>
+        <mat-radio-button value="active">فعال</mat-radio-button>
+        <mat-radio-button value="inactive">غیر فعال</mat-radio-button>
+      </mat-radio-group>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-stroked-button (click)="onCancel()" appVazirFont>انصراف</button>
+  <button mat-flat-button color="primary" type="submit" form="edit-department-form" [disabled]="editForm.invalid || !editForm.dirty">
+    <mat-icon>save</mat-icon>
+    <span appVazirFont>ذخیره تغییرات</span>
+  </button>
+</mat-dialog-actions>
