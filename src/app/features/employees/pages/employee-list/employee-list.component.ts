@@ -11,12 +11,15 @@ import { VazirFontDirective } from '../../../../shared/directives/vazir-font.dir
   selector: 'app-employee-list',
   templateUrl: './employee-list.component.html',
   styleUrls: ['./employee-list.component.scss'],
-  imports:[VazirFontDirective],
-    hostDirectives: [
-          {
-            directive: VazirFontDirective,
-          }
-        ],
+  standalone: true,
+  // imports: [
+  //   VazirFontDirective
+  // ],
+  hostDirectives: [
+    {
+      directive: VazirFontDirective,
+    }
+  ],
 })
 export class EmployeeListComponent implements OnInit {
   employeeForm: FormGroup;

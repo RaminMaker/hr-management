@@ -1,8 +1,8 @@
 
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit,OnDestroy  } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common'; 
-import { forkJoin } from 'rxjs';
+
 import { ApiService } from '../../../../core/services/api.service';
 import { MaterialModule } from "../../../../shared/material.module";
 
@@ -16,6 +16,8 @@ import { EditDepartmentDialogComponent } from '../../components/edit-department-
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { VazirFontDirective } from '../../../../shared/directives/vazir-font.directive';
 
+
+import { Subject, filter, switchMap,takeUntil } from 'rxjs';
  
 @Component({
   selector: 'app-department-list',
@@ -35,7 +37,7 @@ import { VazirFontDirective } from '../../../../shared/directives/vazir-font.dir
     }
   ],
 })
-export class DepartmentListComponent implements OnInit, AfterViewInit {
+export class DepartmentListComponent implements OnInit, AfterViewInit , OnDestroy {
   departmentForm: FormGroup;
   departments: any[] = [];
   employees: any[] = [];
@@ -48,6 +50,8 @@ export class DepartmentListComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<any>();
   
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder, 
@@ -71,48 +75,49 @@ export class DepartmentListComponent implements OnInit, AfterViewInit {
 
   loadData(): void {
     this.isLoading = true;
-    this.apiService.getDepartments().subscribe(departments => {
-      this.dataSource.data = departments;
-      this.isLoading = false;
-    }, error => {
-      console.error('Error loading departments', error);
-      this.isLoading = false;
-    });
+    this.apiService.getDepartments()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (departments) => {
+          this.dataSource.data = departments;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading departments', error);
+          this.isLoading = false;
+        }
+      });
   }
 
   onSubmit(): void {
     if (this.departmentForm.valid) {
-      this.apiService.addDepartment(this.departmentForm.value).subscribe(() => {
-        this.loadData(); 
-        this.departmentForm.reset({ status: 'active', creationDate: new Date() });
-      });
+      this.apiService.addDepartment(this.departmentForm.value)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.loadData(); 
+          this.departmentForm.reset({ status: 'active', creationDate: new Date() });
+        });
     }
   }
 
-
   onViewDetails(department: Department): void {
-    //const departmentEmployees = this.employees.filter(emp => emp.departmentId === department.id);
-    
-    // this.isLoading = true;
-
-
-    this.apiService.getEmployeesByDepartmentId(department.id).subscribe({
-      next: (employeesOfDept) => {
-        this.dialog.open(EmployeeDialogComponent, {
-          width: '700px',
-          direction: 'rtl',
-          data: {
-            departmentName: department.name,
-            employees: employeesOfDept
-          }
-        });
-      },
-      error: (err) => {
-
-        console.error(`Error fetching employees for department ${department.id}`, err);
-
-      }
-    });
+    this.apiService.getEmployeesByDepartmentId(department.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (employeesOfDept) => {
+          this.dialog.open(EmployeeDialogComponent, {
+            width: '700px',
+            direction: 'rtl',
+            data: {
+              departmentName: department.name,
+              employees: employeesOfDept
+            }
+          });
+        },
+        error: (err) => {
+          console.error(`Error fetching employees for department ${department.id}`, err);
+        }
+      });
   }
 
   onEdit(department: Department, event: MouseEvent): void {
@@ -124,13 +129,13 @@ export class DepartmentListComponent implements OnInit, AfterViewInit {
       data: department 
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        
-        this.loadData(); 
-        
-      }
-    });
+    dialogRef.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(result => {
+        if (result) {
+          this.loadData(); 
+        }
+      });
   }
 
   onDelete(department: Department, event: MouseEvent): void {
@@ -145,19 +150,20 @@ export class DepartmentListComponent implements OnInit, AfterViewInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
- 
-        this.apiService.deleteDepartment(department.id).subscribe({
-          next: () => {
-            this.loadData();
-            
-          },
-          error: (err) => console.error('Error deleting department', err)
-        });
-      }
+    dialogRef.afterClosed()
+      .pipe(
+      
+      takeUntil(this.destroy$),
+      filter(result => !!result),
+      switchMap(() => 
+        this.apiService.deleteDepartment(department.id)
+      )
+    )
+    .subscribe({
+      next: () => this.loadData(),
+      error: (err) => console.error('Error deleting department', err)
     });
-  }
+}
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
@@ -192,5 +198,9 @@ export class DepartmentListComponent implements OnInit, AfterViewInit {
         
       }
     });
+  }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
