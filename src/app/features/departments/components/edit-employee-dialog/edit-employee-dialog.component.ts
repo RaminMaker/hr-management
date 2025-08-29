@@ -1,6 +1,6 @@
 
 
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnDestroy } from '@angular/core';  
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 
@@ -16,6 +16,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ApiService } from '../../../../core/services/api.service';
 import { VazirFontDirective } from '../../../../shared/directives/vazir-font.directive';
+
+import { Subject,filter, switchMap, takeUntil,take } from 'rxjs';
 
 @Component({
   selector: 'app-edit-employee-dialog',
@@ -33,7 +35,11 @@ import { VazirFontDirective } from '../../../../shared/directives/vazir-font.dir
   styleUrls: ['./edit-employee-dialog.component.scss'] 
 })
 export class EditEmployeeDialogComponent {
+
+  private destroy$ = new Subject<void>();
+  
   editForm: FormGroup;
+  
   educationLevels = [
     { value: 'diploma', viewValue: 'دیپلم' },
     { value: 'bachelor', viewValue: 'کارشناسی' },
@@ -59,16 +65,22 @@ export class EditEmployeeDialogComponent {
     this.dialogRef.close();
   }
 
-  onSubmit(): void {
-    if (this.editForm.invalid || !this.editForm.dirty) {
-      return;
-    }
+onSubmit(): void {
+  if (this.editForm.invalid || !this.editForm.dirty) {
+    return;
+  }
 
-    this.apiService.updateEmployee(this.employee.id, this.editForm.value).subscribe({
+  this.apiService.updateEmployee(this.employee.id, this.editForm.value)
+    .pipe(take(1)) 
+    .subscribe({
       next: (updatedEmployee) => {
         this.dialogRef.close(updatedEmployee);
       },
       error: (err) => console.error('Error updating employee', err)
     });
+}
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

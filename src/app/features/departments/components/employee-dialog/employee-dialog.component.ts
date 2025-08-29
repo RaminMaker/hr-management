@@ -1,6 +1,6 @@
 
 
-import { Component, Inject, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Inject, ViewChild, AfterViewInit, OnDestroy } from '@angular/core'; 
 
 
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -18,6 +18,8 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 
 import { Employee } from '../../../../core/models/employee.model';
 import { VazirFontDirective } from '../../../../shared/directives/vazir-font.directive';
+
+import { Subject,filter, switchMap, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-employee-dialog',
@@ -41,12 +43,15 @@ import { VazirFontDirective } from '../../../../shared/directives/vazir-font.dir
   templateUrl: './employee-dialog.component.html',
   styleUrls: ['./employee-dialog.component.scss']
 })
-export class EmployeeDialogComponent implements AfterViewInit {
+export class EmployeeDialogComponent implements AfterViewInit, OnDestroy {
 
  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   dataSource = new MatTableDataSource<any>();
   displayedColumns: string[] = ['id', 'name', 'gender', 'education', 'actions'];
+
+  private destroy$ = new Subject<void>();
+
 
   constructor(
     public dialogRef: MatDialogRef<EmployeeDialogComponent>,
@@ -72,51 +77,60 @@ export class EmployeeDialogComponent implements AfterViewInit {
     return map[education] || education;
   }
 
-  onEditEmployee(employee: Employee): void {
-    const dialogRef = this.dialog.open(EditEmployeeDialogComponent, {
-      width: '400px',
-      direction: 'rtl',
-      data: employee 
-    });
+onEditEmployee(employee: Employee): void {
+  const dialogRef = this.dialog.open(EditEmployeeDialogComponent, {
+    width: '400px',
+    direction: 'rtl',
+    data: employee 
+  });
 
-    dialogRef.afterClosed().subscribe(updatedEmployee => {
-      if (updatedEmployee) {
-
-        const index = this.dataSource.data.findIndex(emp => emp.id === updatedEmployee.id);
-        if (index > -1) {
-          const currentData = this.dataSource.data;
-          currentData[index] = updatedEmployee;
-          this.dataSource.data = [...currentData]; 
-        }
+  dialogRef.afterClosed()
+    .pipe(
+      takeUntil(this.destroy$),
+      filter(updatedEmployee => !!updatedEmployee) 
+    )
+    .subscribe((updatedEmployee: Employee) => {
+      const index = this.dataSource.data.findIndex(emp => emp.id === updatedEmployee.id);
+      if (index > -1) {
+        const currentData = this.dataSource.data;
+        currentData[index] = updatedEmployee;
+        this.dataSource.data = [...currentData]; 
       }
     });
-  }
+}
 
-  onDeleteEmployee(employee: Employee): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '350px',
-      direction: 'rtl',
-      data: {
-        title: 'تایید حذف کارمند',
-        message: `آیا از حذف کارمند "${employee.name}" اطمینان دارید؟`
-      }
+onDeleteEmployee(employee: Employee): void {
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    width: '350px',
+    direction: 'rtl',
+    data: {
+      title: 'تایید حذف کارمند',
+      message: `آیا از حذف کارمند "${employee.name}" اطمینان دارید؟`
+    }
+  });
+
+  dialogRef.afterClosed()
+    .pipe(
+      takeUntil(this.destroy$), 
+      filter(result => !!result), 
+      switchMap(() => 
+        this.apiService.deleteEmployee(employee.id) 
+      )
+    )
+    .subscribe({
+      next: () => {
+        this.dataSource.data = this.dataSource.data.filter(emp => emp.id !== employee.id);
+      },
+      error: (err) => console.error('Error deleting employee', err)
     });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.apiService.deleteEmployee(employee.id).subscribe({
-          next: () => {
-
-            this.dataSource.data = this.dataSource.data.filter(emp => emp.id !== employee.id);
-
-          },
-          error: (err) => console.error('Error deleting employee', err)
-        });
-      }
-    });
-  }
+}
 
   onClose(): void {
     this.dialogRef.close();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

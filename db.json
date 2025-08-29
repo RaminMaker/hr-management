@@ -21,7 +21,7 @@
     {
       "id": "dd83",
       "name": "تست واحد دوم",
-      "status": "inactive",
+      "status": "active",
       "creationDate": "2025-08-27T15:55:13.708Z"
     },
     {
@@ -84,7 +84,7 @@
     },
     {
       "id": "ae68",
-      "name": "علی لطفی",
+      "name": "علی لطفیان",
       "gender": "male",
       "mobile": "09123333333",
       "education": "bachelor",
